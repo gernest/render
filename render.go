@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/kr/pretty"
 )
 
 const (
@@ -82,6 +84,9 @@ type Options struct {
 	IsDevelopment bool
 	// Unescape HTML characters "&<>" to their original values. Default is false.
 	UnEscapeHTML bool
+	// DefaultData this will we used as a base data to be passed in all templates.
+	// if another data cotext is provided will be merged to this
+	DefaultData TemplateData
 }
 
 // HTMLOptions is a struct for overriding some rendering Options for specific HTML call.
@@ -97,6 +102,7 @@ type Render struct {
 	opt             Options
 	templates       *template.Template
 	compiledCharset string
+	data            TemplateData
 }
 
 // New constructs a new Render instance with the supplied options.
@@ -111,7 +117,11 @@ func New(options ...Options) *Render {
 	r := Render{
 		opt: o,
 	}
-
+	if r.opt.DefaultData == nil {
+		r.data = NewTemplateData()
+	} else {
+		r.data = r.opt.DefaultData
+	}
 	r.prepareOptions()
 	r.compileTemplates()
 
@@ -327,8 +337,15 @@ func (r *Render) HTML(w http.ResponseWriter, status int, name string, binding in
 		Name:      name,
 		Templates: r.templates,
 	}
-
-	r.Render(w, h, binding)
+	if len(r.data) > 0 {
+		d := NewTemplateData()
+		d.Merge(r.data)
+		d.Merge(binding)
+		pretty.Println(d)
+		r.Render(w, h, d)
+	} else {
+		r.Render(w, h, binding)
+	}
 }
 
 func (r *Render) execute(name string, binding interface{}) (*bytes.Buffer, error) {
