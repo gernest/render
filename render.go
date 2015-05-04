@@ -338,6 +338,9 @@ func (r *Render) HTML(w http.ResponseWriter, status int, name string, binding in
 		Templates: r.templates,
 	}
 	if len(r.data) > 0 {
+		// we should preserve the defaullt template data by creatig a new template
+		// data instace, and just merge the two context together.
+		// This assures that for all subsequent rendering r.data will be the same
 		d := NewTemplateData()
 		d.Merge(r.data)
 		d.Merge(binding)
