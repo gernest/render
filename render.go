@@ -9,8 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/kr/pretty"
 )
 
 const (
@@ -344,7 +342,6 @@ func (r *Render) HTML(w http.ResponseWriter, status int, name string, binding in
 		d := NewTemplateData()
 		d.Merge(r.data)
 		d.Merge(binding)
-		pretty.Println(d)
 		r.Render(w, h, d)
 	} else {
 		r.Render(w, h, binding)
